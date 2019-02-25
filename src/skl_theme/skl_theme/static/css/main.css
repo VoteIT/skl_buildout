@@ -1,0 +1,84 @@
+/*
+Skoldigiplan default theme
+Main:
+#5c5b97
+
+Compl:
+#blacd5
+
+Backgroundish:
+#c5d3d4
+
+
+#Logo colors:
+Gul: #FFC800 (RGB: 255/200/0)
+Orange: #E6460A (RGB: 230/70/10)
+Svart: #000000 (RGB: 0/0/0)
+*/
+/*
+$gray-base:              #000 !default;
+$gray-darker:            lighten($gray-base, 13.5%) !default; // #222
+$gray-dark:              lighten($gray-base, 20%) !default;   // #333
+$gray:                   lighten($gray-base, 33.5%) !default; // #555
+$gray-light:             lighten($gray-base, 46.7%) !default; // #777
+$gray-lighter:           lighten($gray-base, 93.5%) !default; // #eee
+*/
+@import url("https://fonts.googleapis.com/css?family=Open+Sans");
+.slide-in-nav {
+  background-color: #fff; }
+
+#context-actions {
+  background-color: #f5f5f5;
+  z-index: 1020;
+  border-bottom: #e7e7e7 solid 1px; }
+
+#meeting-menu .open #meeting-extras {
+  background-color: #fff !important;
+  color: #000 !important; }
+
+/* Generic navbar active */
+@media (min-width: 768px) {
+  #fixed-nav {
+    background-color: #f5f5f5;
+    border-right: 1px solid #e3e3e3; } }
+#fixed-top-nav {
+  background-color: #5c5b97;
+  color: #fff; }
+  #fixed-top-nav a, #fixed-top-nav:focus, #fixed-top-nav:active {
+    background-color: #5c5b97;
+    color: #fff; }
+  #fixed-top-nav .dropdown-menu a {
+    background-color: #fff;
+    color: #000; }
+    #fixed-top-nav .dropdown-menu a:hover {
+      color: #262626;
+      background-color: #f5f5f5; }
+
+.menu-toggler {
+  border-radius: 8px 8px 0 0;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transition: background-color .25s;
+  margin-left: 8px; }
+
+@media (min-width: 768px) {
+  body.left-fixed-active #agenda-toggler {
+    background-color: #f5f5f5 !important;
+    color: #000 !important; } }
+
+.menu-toggler.open {
+  background-color: white !important;
+  color: #000 !important; }
+
+.voteit-logo-nav {
+  min-width: 70px;
+  padding: 0px;
+  display: inline-block;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-image: url(/voteit_core_static/images/voteit-logo.svg);
+  background-position-y: center; }
+  @media (min-width: 992px) {
+    .voteit-logo-nav {
+      margin-right: 10px; } }
+
+/*# sourceMappingURL=main.css.map */

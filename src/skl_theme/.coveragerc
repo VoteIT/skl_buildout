@@ -1,0 +1,6 @@
+[run]
+source = skl_theme
+omit = skl_theme/test*
+
+[report]
+show_missing = true

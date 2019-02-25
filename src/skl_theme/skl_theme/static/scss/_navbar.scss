@@ -1,0 +1,90 @@
+@import "variables";
+
+@import "bootstrap/variables";
+@import "bootstrap/mixins";
+
+
+.slide-in-nav {
+    background-color: $body-bg;
+}
+
+#context-actions {
+    background-color: $well-bg;
+    z-index: $zindex-navbar-fixed - 10;
+    border-bottom: $navbar-default-border solid 1px;
+}
+
+#meeting-menu {
+    .open #meeting-extras {
+        background-color: #fff!important;
+        color: #000!important;
+    }
+}
+
+
+/* Generic navbar active */
+@media (min-width: $grid-float-breakpoint) {
+
+    #fixed-nav {
+        background-color: $well-bg;
+        border-right: 1px solid $well-border;
+    }
+
+}
+
+
+#fixed-top-nav {
+    background-color: $navbar-voteit-bg;
+    color: $navbar-voteit-color;
+//    height: $voteit-fixed-top-nav;
+    a, &:focus, &:active {
+        background-color: $navbar-voteit-bg;
+        color: $navbar-voteit-color;
+    }
+    .dropdown-menu a {
+        background-color: #fff;
+        color: #000;
+        &:hover {
+            color: $dropdown-link-hover-color;
+            background-color: $dropdown-link-hover-bg;
+        }
+    }
+}
+
+
+.menu-toggler {
+    border-radius: 8px 8px 0 0;
+    background-color: rgba(255,255,255,.1)!important;
+    transition: background-color .25s;
+    margin-left: 8px;
+}
+
+body.left-fixed-active #agenda-toggler {
+    @media (min-width: $screen-sm) {
+        background-color: $well-bg!important;
+        color: #000!important;
+    }
+}
+
+.menu-toggler {
+    &.open {
+        background-color: rgba(255,255,255,1)!important;
+        color: #000!important;
+    }
+}
+
+.voteit-logo-nav {
+    min-width: 70px;
+//    margin-top: floor($voteit-nav-padding / 2);
+//    margin-bottom: floor($voteit-nav-padding / 2);
+    padding: 0px;
+//    height: $voteit-nav-line-height + $voteit-nav-padding;
+    display: inline-block;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-image: url(/voteit_core_static/images/voteit-logo.svg);
+    background-position-y: center;
+    @media (min-width: $screen-md) {
+        margin-right: 10px;
+    }
+}
