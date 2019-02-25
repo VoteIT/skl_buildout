@@ -1,3 +1,2 @@
 cd skl_theme/static
-scss --watch scss:css
-
+sass --watch scss:css
