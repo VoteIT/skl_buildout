@@ -13,6 +13,7 @@ lib/
 local/
 src/*
 !src/skl_theme
+!src/skl_owner_groups
 build/
 dist/
 parts/
