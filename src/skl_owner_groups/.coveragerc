@@ -1,0 +1,3 @@
+[run]
+source = skl_owner_groups
+omit = skl_owner_groups/test*
