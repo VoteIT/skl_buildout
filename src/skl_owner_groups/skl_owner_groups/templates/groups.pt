@@ -3,8 +3,7 @@
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-      metal:use-macro="view.macro('arche:templates/base_view.pt', 'arche:templates/inline.pt')"
-      i18n:domain="skl_owner_groups">
+      metal:use-macro="view.macro('arche:templates/base_view.pt', 'arche:templates/inline.pt')">
 <body>
 <metal:actionbar fill-slot="actionbar"></metal:actionbar>
 
@@ -17,10 +16,50 @@
     <b>Obs!</b> Gruppsystemet är inaktiverat och kommer inte påverka omröstningar.
   </div>
 
-  <!-- FIXME with vue instead -->
-  <tal:iter repeat="x context.values()">
-    <p>${x.title} ${x.category}</p>
-  </tal:iter>
+  <div tal:condition="presence_check_open">
+    Notera: En närvarokontroll pågår/pågick när sidan laddades.
+  </div>
+
+  <div class="table-responsive">
+  <table class="table-striped table-hover table-condensed">
+    <thead>
+    <tr>
+      <th tal:condition="request.is_moderator"></th>
+      <th>Organisation</th>
+      <th>Ansvarig</th>
+      <th>Närvarande</th>
+      <th>Ombud</th>
+    </tr>
+    </thead>
+    <tbody>
+      <tal:iter repeat="x context.get_sorted_values()">
+        <tal:def define="userid x.owner">
+          <tr>
+            <td tal:condition="request.is_moderator">
+              <a href="${request.resource_url(x, 'edit', query={'came_from': here_url})}"
+                 title="Redigera">
+                <span class="glyphicon glyphicon-edit" />
+              </a>
+            </td>
+            <td>${x.title}</td>
+            <td>
+              <tal:user tal:condition="userid" replace="structure request.creators_info([userid], portrait=False, no_userid=True)" />
+            </td>
+            <td>
+              <span tal:condition="userid in present_userids" class="glyphicon glyphicon-ok text-success"></span>
+              <span class="sr-only">Ja</span>
+            </td>
+            <td tal:define="delegated_to x.delegate_to">
+              ${delegated_to and context[delegated_to].title or None|delegated_to}
+            </td>
+          </tr>
+
+        </tal:def>
+      </tal:iter>
+    </tbody>
+
+  </table>
+  </div>
 
 </div>
 </body>

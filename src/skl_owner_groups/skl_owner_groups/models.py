@@ -2,14 +2,28 @@
 from __future__ import unicode_literals
 
 import unicodecsv as csv
-
+#from arche.utils import AttributeAnnotations
+#from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.path import AssetResolver
+#from voteit.irl.models.elegible_voters_method import ElegibleVotersMethod
 
 from skl_owner_groups.interfaces import IVGroups
+#from skl_owner_groups.interfaces import GROUPS_NAME
 
 
 _KOMMUNER_FILE = "skl_owner_groups:data/kommuner.csv"
 _REGIONER_FILE = "skl_owner_groups:data/regioner.csv"
+
+
+
+# class RepresentativesAsVoters(ElegibleVotersMethod):
+#
+#
+#     def get_voters(self, request = None, **kw):
+#         if GROUPS_NAME not in self.context:
+#             raise HTTPBadRequest("Hittar inte grupper")
+#         groups = self.context[GROUPS_NAME]
+
 
 
 def create_groups(groups, request):
@@ -29,19 +43,19 @@ def create_groups(groups, request):
     del groups.order
 
     factory = request.content_factories['VGroup']
-
+    common_args = {'local_roles': {}}
     # SKL
-    groups['skl'] = factory(title='SKL', category='skl')
+    groups['skl'] = factory(title='SKL', category='skl', **common_args)
 
     # Regionerna
     for (key, title) in _get_kv_from_csv(_REGIONER_FILE):
-        groups[key] = factory(title=title, category='region')
+        groups[key] = factory(title=title, category='region', **common_args)
 
     # Kommunerna - minus Gotland!
     for (key, title) in _get_kv_from_csv(_KOMMUNER_FILE):
         if key == '0980':
             continue
-        groups[key] = factory(title=title, category='kommun')
+        groups[key] = factory(title=title, category='kommun', **common_args)
 
 
 def _get_kv_from_csv(asset_spec):
@@ -63,3 +77,5 @@ if __name__ == '__main__':
     print("=== Regioner ===")
     for (key, title) in _get_kv_from_csv(_REGIONER_FILE):
         print (key.ljust(10) + title)
+
+
