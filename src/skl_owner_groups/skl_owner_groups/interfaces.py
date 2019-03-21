@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from arche.interfaces import IBase
 from arche.interfaces import IContent
-
+from arche.interfaces import IIndexedContent
 
 GROUPS_NAME = '_groups'
 GRUPPKATEGORIER = (
@@ -13,7 +13,7 @@ GRUPPKATEGORIER = (
 )
 
 
-class IVGroup(IBase):
+class IVGroup(IBase, IIndexedContent):
     """ A voting group. """
 
 
