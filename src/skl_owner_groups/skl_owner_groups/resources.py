@@ -96,10 +96,7 @@ class Groups(Content):
         return self._delegated_to.get(group_name, None)
 
     def is_delegate_for(self, group_name):
-        group_names = self._received_delegations.get(group_name, None)
-        if group_names:
-            return frozenset(group_names)
-        return frozenset()
+        return frozenset(self._received_delegations.get(group_name, ()))
 
     def can_delegate_to(self, group_name):
         return group_name not in self._delegated_to
@@ -111,6 +108,21 @@ class Groups(Content):
         self._received_delegations[to_group].remove(group_name)
         del self._delegated_to[group_name]
         return to_group
+
+    def get_vote_power(self, group_name):
+        """ Return the amounts of votes this group should have, based on:
+            A) Did they delegate theiir vote somewhere?
+            B) Did someone else delegate their vote here?
+            C) How many base votes?
+        """
+        if self.has_delegated_to(group_name) is not None:
+            return 0
+        group = self[group_name]
+        votes = group.base_votes
+        for name in self.is_delegate_for(group_name):
+            votes += self[name].base_votes
+        return votes
+
 
 # FIXME: Write method to figure out active users and their vote power
 

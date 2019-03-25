@@ -33,7 +33,10 @@
       <th>Organisation</th>
       <th>Ansvarig</th>
       <th>Närvarande</th>
-      <th>Ombud</th>
+      <th>Har ombud</th>
+      <th>Röst.</th>
+      <th>Tot.</th>
+      <th tal:condition="request.is_moderator"></th>
     </tr>
     </thead>
     <tbody>
@@ -46,7 +49,10 @@
                 <span class="glyphicon glyphicon-edit" />
               </a>
             </td>
-            <td>${x.title}</td>
+            <td>
+              <a name="${x.uid}"></a>${x.title}
+
+            </td>
             <td>
               <tal:user tal:condition="userid" replace="structure request.creators_info([userid], portrait=False, no_userid=True)" />
             </td>
@@ -54,11 +60,23 @@
               <span tal:condition="userid in present_userids" class="glyphicon glyphicon-ok text-success"></span>
               <span class="sr-only">Ja</span>
             </td>
-            <td tal:define="delegated_to x.delegate_to">
-              ${delegated_to and context[delegated_to].title or None|delegated_to}
+            <td tal:define="delegated_to context.get(x.delegate_to, None)">
+              <a tal:condition="delegated_to" href="javascript:$('[name=${delegated_to.uid}]').goTo()">
+                ${delegated_to.title}
+              </a>
+            </td>
+            <td>
+              ${x.base_votes}
+            </td>
+            <td>
+              ${context.get_vote_power(x.__name__)}
+            </td>
+            <td tal:condition="request.is_moderator">
+              <a href="${request.resource_url(x, 'delete')}" title="Ta bort...">
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+              </a>
             </td>
           </tr>
-
         </tal:def>
       </tal:iter>
     </tbody>

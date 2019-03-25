@@ -61,6 +61,33 @@ class GroupsTests(TestCase):
         self.assertEqual(groups.is_delegate_for('b'), frozenset())
         self.assertEqual(groups.is_delegate_for('c'), frozenset(['a', 'b']))
 
+    def test_get_vote_power_delegation(self):
+        groups, request = self._fixture()
+        for x in ('a', 'b', 'c'):
+            self.assertEqual(groups.get_vote_power(x), 1)
+
+        groups.delegate_vote_to('a', 'c')
+        self.assertEqual(groups.get_vote_power('a'), 0)
+        self.assertEqual(groups.get_vote_power('c'), 2)
+
+        groups.delegate_vote_to('b', 'c')
+        self.assertEqual(groups.get_vote_power('a'), 0)
+        self.assertEqual(groups.get_vote_power('b'), 0)
+        self.assertEqual(groups.get_vote_power('c'), 3)
+
+    def test_get_vote_power_count(self):
+        groups, request = self._fixture()
+        groups['a'].base_votes = 3
+        groups['b'].base_votes = 2
+        self.assertEqual(groups.get_vote_power('a'), 3)
+        self.assertEqual(groups.get_vote_power('b'), 2)
+        self.assertEqual(groups.get_vote_power('c'), 1)
+
+        groups.delegate_vote_to('a', 'b')
+        self.assertEqual(groups.get_vote_power('a'), 0)
+        self.assertEqual(groups.get_vote_power('b'), 5)
+        self.assertEqual(groups.get_vote_power('c'), 1)
+
 
 class GroupTest(TestCase):
 

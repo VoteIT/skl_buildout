@@ -139,7 +139,7 @@ class GroupSchema(colander.Schema):
     def after_bind(self, node, kw):
         context = kw['context']
         if IVGroup.providedBy(context):
-            if context.category == 'ombud':
+            if context.category in ('ombud', 'skl'):
                 del node['delegate_to']
 
 
