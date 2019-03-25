@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+from arche.exceptions import ReferenceGuarded
 from pyramid import testing
 from pyramid.request import apply_request_extensions
 from voteit.core.testing_helpers import bootstrap_and_fixture
@@ -87,6 +88,21 @@ class GroupsTests(TestCase):
         self.assertEqual(groups.get_vote_power('a'), 0)
         self.assertEqual(groups.get_vote_power('b'), 5)
         self.assertEqual(groups.get_vote_power('c'), 1)
+
+    def test_delete_cleans_up_if_delegated(self):
+        groups, request = self._fixture()
+        groups.delegate_vote_to('a', 'b')
+        self.assertEqual(groups.get_vote_power('b'), 2)
+        del groups['a']
+        self.assertFalse(groups.is_delegate_for('b'))
+        self.assertEqual(groups.get_vote_power('b'), 1)
+
+    def test_delete_blocked_if_delegated_to(self):
+        self.config.include('arche.models.reference_guard')
+        self.config.include('skl_owner_groups.models')
+        groups, request = self._fixture()
+        groups.delegate_vote_to('a', 'b')
+        self.assertRaises(ReferenceGuarded, groups.remove, 'b')
 
 
 class GroupTest(TestCase):

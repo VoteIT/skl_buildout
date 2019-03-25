@@ -78,6 +78,14 @@ class Groups(Content):
         self._received_delegations = OOBTree()
         self._delegated_to = OOBTree()
 
+    def remove(self, name, send_events=True):
+        """ Override removal of folders to make sure they clean up rerences.
+            Removing a group that's a delegate for someone else will be blocked by the reference guard in models.
+        """
+        if self.has_delegated_to(name):
+            self.remove_delegation(name)
+        return super(Groups, self).remove(name, send_events=send_events)
+
     def get_sorted_values(self):
         """ Return all contained Group object sorted on title. """
         return sorted(self.values(), key=lambda x:x.title.lower())

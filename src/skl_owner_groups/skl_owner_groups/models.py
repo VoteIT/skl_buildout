@@ -6,7 +6,9 @@ import unicodecsv as csv
 #from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.path import AssetResolver
 #from voteit.irl.models.elegible_voters_method import ElegibleVotersMethod
+from pyramid.traversal import find_interface
 
+from skl_owner_groups.interfaces import IVGroup
 from skl_owner_groups.interfaces import IVGroups
 #from skl_owner_groups.interfaces import GROUPS_NAME
 
@@ -79,3 +81,16 @@ if __name__ == '__main__':
         print (key.ljust(10) + title)
 
 
+def guard_representatives(reqest, context):
+    groups = find_interface(context, IVGroups)
+    return [groups[x] for x in groups.is_delegate_for(context.__name__)]
+
+
+def includeme(config):
+    config.add_ref_guard(
+        guard_representatives,
+        requires=(IVGroup,),
+        catalog_result=False,
+        title="Är representant för en annan grupp.",
+        allow_move=False
+    )
