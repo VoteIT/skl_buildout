@@ -25,9 +25,9 @@ class GroupsTests(TestCase):
         request.root = root
         groups = root[GROUPS_NAME] = request.content_factories['VGroups']()
         gfact = request.content_factories['VGroup']
-        groups['a'] = gfact(owner='adam', title='A')
-        groups['b'] = gfact(owner='berit', title='B')
-        groups['c'] = gfact(owner='cina', title='C')
+        groups['a'] = gfact(owner='adam', title='A', category='skl')
+        groups['b'] = gfact(owner='berit', title='B', category='kommun')
+        groups['c'] = gfact(owner='cina', title='C', category='region')
         return groups, request
 
     def test_get_sorted(self):
@@ -103,6 +103,18 @@ class GroupsTests(TestCase):
         groups, request = self._fixture()
         groups.delegate_vote_to('a', 'b')
         self.assertRaises(ReferenceGuarded, groups.remove, 'b')
+
+    def test_get_categorized_vote_power(self):
+        groups, request = self._fixture()
+        groups['a'].base_votes = 3
+        groups['b'].base_votes = 2
+        self.assertEqual(groups.get_categorized_vote_power('adam'), {'skl': 3})
+        self.assertEqual(groups.get_categorized_vote_power('berit'), {'kommun': 2})
+        self.assertEqual(groups.get_categorized_vote_power('cina'), {'region' :1})
+
+        groups.delegate_vote_to('a', 'b')
+        self.assertEqual(groups.get_categorized_vote_power('adam'), {})
+        self.assertEqual(groups.get_categorized_vote_power('berit'), {'kommun': 2, 'skl': 3})
 
 
 class GroupTest(TestCase):

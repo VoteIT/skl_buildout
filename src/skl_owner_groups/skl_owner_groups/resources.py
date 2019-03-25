@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from BTrees.OOBTree import OOBTree, OOSet
+from collections import Counter
+
+from BTrees.OOBTree import OOBTree
+from BTrees.OOBTree import OOSet
 from arche.resources import Base
 from arche.resources import Content
 from arche.resources import LocalRolesMixin
 from arche.security import ROLE_OWNER
 from zope.interface import implementer
+from six import string_types
 
 from skl_owner_groups.security import ADD_VGROUP
 from skl_owner_groups.interfaces import IVGroup
@@ -122,7 +126,7 @@ class Groups(Content):
 
     def get_vote_power(self, group_name):
         """ Return the amounts of votes this group should have, based on:
-            A) Did they delegate theiir vote somewhere?
+            A) Did they delegate their vote somewhere?
             B) Did someone else delegate their vote here?
             C) How many base votes?
         """
@@ -134,8 +138,24 @@ class Groups(Content):
             votes += self[name].base_votes
         return votes
 
+    def get_users_group(self, userid):
+        """ We don't need to use the catalog since we don't expect a lot of load here."""
+        assert isinstance(userid, string_types)
+        for x in self.values():
+            if x.owner == userid:
+                return x
 
-# FIXME: Write method to figure out active users and their vote power
+    def get_categorized_vote_power(self, userid):
+        """ All the kinds of vote power this user has. This doesn't check if a user is actually a voter."""
+        counter = Counter()
+        primary_group = self.get_users_group(userid)
+        if primary_group is None or self.has_delegated_to(primary_group.__name__):
+            return counter
+        counter[primary_group.category] += primary_group.base_votes
+        for name in self.is_delegate_for(primary_group.__name__):
+            group = self[name]
+            counter[group.category] += group.base_votes
+        return counter
 
 
 def includeme(config):
