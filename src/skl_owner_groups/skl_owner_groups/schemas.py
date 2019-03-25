@@ -4,9 +4,10 @@ from __future__ import unicode_literals
 import colander
 import deform
 from arche.widgets import ReferenceWidget
-from arche.widgets import UserReferenceWidget
 from pyramid.traversal import resource_path
-from skl_owner_groups.interfaces import IVGroups, GRUPPKATEGORIER
+
+from skl_owner_groups.interfaces import IVGroups
+from skl_owner_groups.interfaces import GRUPPKATEGORIER
 
 
 class CreateSchema(colander.Schema):
