@@ -17,6 +17,16 @@
     ${context.title}
   </h1>
 
+  <p tal:condition="request.is_moderator">
+    <a href="${request.resource_url(request.meeting, 'check_meeting_presence')}">
+      Närvarokontroll
+    </a>
+    &mdash;
+    <a href="${request.resource_url(request.meeting, 'update_elegible_voters')}">
+      Röstberättigade och rösttal
+    </a>
+  </p>
+
   <div tal:condition="not context.enabled" class="alert alert-warning" role="alert">
     <b>Obs!</b> Gruppsystemet är inaktiverat och kommer inte påverka omröstningar.
   </div>
