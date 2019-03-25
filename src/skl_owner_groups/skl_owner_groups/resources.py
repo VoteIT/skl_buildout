@@ -26,7 +26,10 @@ class Group(Base, LocalRolesMixin):
 
     def __init__(self, **kw):
         # The default behaviour is to give the owner role to the current user. We don't want that here,
-        # since owner has a special meaning to therse groups
+        # since owner has a special meaning to these groups.
+        # Also make sure there's no conflict with local_roles / owner settings
+        if 'owner' in kw:
+            kw['local_roles'] = {kw.pop('owner'): ROLE_OWNER}
         kw.setdefault('local_roles', {})
         super(Group, self).__init__(**kw)
 
