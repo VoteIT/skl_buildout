@@ -4,8 +4,10 @@ from __future__ import unicode_literals
 import colander
 import deform
 from arche.widgets import ReferenceWidget
+from pyramid.traversal import find_interface
 from pyramid.traversal import resource_path
 
+from skl_owner_groups.interfaces import IVGroup
 from skl_owner_groups.interfaces import IVGroups
 from skl_owner_groups.interfaces import GRUPPKATEGORIER
 
@@ -39,7 +41,7 @@ class SingleGroupMembershipValidator(object):
         self.context = kw['context']  # The group here
 
     def __call__(self, node, value):
-        groups = self.context.__parent__
+        groups = find_interface(self.context, IVGroups)
         for group in groups.values():
             if group is self.context:
                 continue
@@ -52,7 +54,7 @@ class SingleGroupMembershipValidator(object):
 @colander.deferred
 def local_groups_reference(node, kw):
    context = kw['context']
-   groups = context.__parent__
+   groups = find_interface(context, IVGroups)
    query_params = {'path': resource_path(groups), 'type_name': 'VGroup'}
    return ReferenceWidget(query_params=query_params, multiple=False, id_attr = '__name__')
 
@@ -64,7 +66,7 @@ class UsableAsDelegationValidator(object):
         self.context = kw['context']  # The group here
 
     def __call__(self, node, value):
-        groups = self.context.__parent__
+        groups = find_interface(self.context, IVGroups)
         if value not in groups:
             raise colander.Invalid(node, "Finns ingen grupp med det namnet")
         group = groups[value]
@@ -106,7 +108,7 @@ def _get_categorized_groups(groups):
 def delegation_widget(node, kw):
     titles = dict(GRUPPKATEGORIER)
     context = kw['context']
-    groups = context.__parent__
+    groups = find_interface(context, IVGroups)
     values = [('', '(Ingen)')]
     for (category, items) in _get_categorized_groups(groups).items():
         title = titles.get(category, '(Okänd)')
@@ -134,8 +136,39 @@ class GroupSchema(colander.Schema):
         widget=delegation_widget
     )
 
+    def after_bind(self, node, kw):
+        context = kw['context']
+        if IVGroup.providedBy(context):
+            if context.category == 'ombud':
+                del node['delegate_to']
+
+
+class AddGroupSchema(GroupSchema):
+    """ Att lägga till standardgrupperna för kommuner, regioner och SKL händer när själva gruppfoldern skapas.
+        Det här formuläret är bara för att lägga till ombudsgrupper, som är en entitet att ge bort en röst till.
+    """
+    title = colander.SchemaNode(
+        colander.String(),
+        title = "Titel på ombudsorganisation",
+    )
+    category = colander.SchemaNode(
+        colander.String(),
+        default="ombud",
+        widget=deform.widget.HiddenWidget(),
+    )
+    base_votes = colander.SchemaNode(
+        colander.Int(),
+        default=0,
+        widget=deform.widget.HiddenWidget(),
+    )
+
+    def after_bind(self, node, kw):
+        # Delegating away the vote isn't a usecase for these types of orgs
+        del node['delegate_to']
+
 
 def includeme(config):
     config.add_schema('VGroups', CreateSchema, 'create')
     config.add_schema('VGroups', SettingsSchema, 'edit')
-    config.add_schema('VGroup', GroupSchema, ['add', 'edit'])
+    config.add_schema('VGroup', AddGroupSchema, 'add')
+    config.add_schema('VGroup', GroupSchema, 'edit')

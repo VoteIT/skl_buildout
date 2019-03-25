@@ -10,6 +10,7 @@ GRUPPKATEGORIER = (
     ("skl", "SKL"),
     ("kommun", "Kommun"),
     ("region", "Region"),
+    ("ombud", "Ombud"),
 )
 
 

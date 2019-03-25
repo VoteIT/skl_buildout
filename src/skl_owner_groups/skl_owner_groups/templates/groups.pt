@@ -8,6 +8,11 @@
 <metal:actionbar fill-slot="actionbar"></metal:actionbar>
 
 <div metal:fill-slot="main-content">
+    <a tal:condition="can_add"
+       class="btn btn-default btn-sm pull-right"
+       href="${request.resource_url(context, 'add', query={'content_type': 'VGroup'})}">
+      <span class="glyphicon glyphicon-plus"></span> Lägg till grupp
+    </a>
   <h1>
     ${context.title}
   </h1>

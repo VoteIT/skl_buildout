@@ -43,19 +43,19 @@ def create_groups(groups, request):
     del groups.order
 
     factory = request.content_factories['VGroup']
-    common_args = {'local_roles': {}}
+
     # SKL
-    groups['skl'] = factory(title='SKL', category='skl', **common_args)
+    groups['skl'] = factory(title='SKL', category='skl')
 
     # Regionerna
     for (key, title) in _get_kv_from_csv(_REGIONER_FILE):
-        groups[key] = factory(title=title, category='region', **common_args)
+        groups[key] = factory(title=title, category='region')
 
     # Kommunerna - minus Gotland!
     for (key, title) in _get_kv_from_csv(_KOMMUNER_FILE):
         if key == '0980':
             continue
-        groups[key] = factory(title=title, category='kommun', **common_args)
+        groups[key] = factory(title=title, category='kommun')
 
 
 def _get_kv_from_csv(asset_spec):

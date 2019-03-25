@@ -4,14 +4,16 @@ from voteit.core.security import VIEW
 from voteit.irl.models.interfaces import IMeetingPresence
 
 from skl_owner_groups.interfaces import IVGroups
+from skl_owner_groups.security import ADD_VGROUP
 
 
 class GroupsView(BaseView):
 
     def __call__(self):
-        need_lib('select2')
+        #need_lib('select2')
         presence = IMeetingPresence(self.request.meeting)
         return {'here_url': self.request.resource_url(self.context),
+                'can_add': self.request.has_permission(ADD_VGROUP),
                 'users': self.request.root['users'],
                 'presence_check_open': presence.open,
                 'present_userids': presence.present_userids}

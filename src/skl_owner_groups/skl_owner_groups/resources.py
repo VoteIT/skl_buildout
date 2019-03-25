@@ -21,8 +21,14 @@ class Group(Base, LocalRolesMixin):
     add_permission = ADD_VGROUP
     title = ""
     category = ""
-    category_code = ""
     base_votes = 1
+    naming_attr = 'uid'
+
+    def __init__(self, **kw):
+        # The default behaviour is to give the owner role to the current user. We don't want that here,
+        # since owner has a special meaning to therse groups
+        kw.setdefault('local_roles', {})
+        super(Group, self).__init__(**kw)
 
     @property
     def owner(self):
@@ -36,8 +42,10 @@ class Group(Base, LocalRolesMixin):
         """"""
         curr_owner = self.owner
         if value != curr_owner:
+            # Skip all events in case resource isn't attached
+            use_event = self.__parent__ is not None
             self.local_roles.remove(curr_owner, ROLE_OWNER, event=False)
-            self.local_roles.add(value, ROLE_OWNER, event=True)
+            self.local_roles.add(value, ROLE_OWNER, event=use_event)
 
     @property
     def delegate_to(self):
@@ -108,5 +116,5 @@ class Groups(Content):
 
 
 def includeme(config):
-    config.add_content_factory(Group)  # Don't specify as manually addable!
+    config.add_content_factory(Group, addable_to='VGroups')
     config.add_content_factory(Groups)
