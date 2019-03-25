@@ -2,30 +2,42 @@
 from __future__ import unicode_literals
 
 import unicodecsv as csv
-#from arche.utils import AttributeAnnotations
-#from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.path import AssetResolver
-#from voteit.irl.models.elegible_voters_method import ElegibleVotersMethod
 from pyramid.traversal import find_interface
+from voteit.irl.models.elegible_voters_method import ElegibleVotersMethod
+from voteit.irl.models.interfaces import IMeetingPresence
 
 from skl_owner_groups.interfaces import IVGroup
 from skl_owner_groups.interfaces import IVGroups
-#from skl_owner_groups.interfaces import GROUPS_NAME
+from skl_owner_groups.interfaces import GROUPS_NAME
 
 
 _KOMMUNER_FILE = "skl_owner_groups:data/kommuner.csv"
 _REGIONER_FILE = "skl_owner_groups:data/regioner.csv"
 
 
+class RepresentativesAsVoters(ElegibleVotersMethod):
+    name = 'skl_owner_groups'
+    title = "SKLs metod för att sätta röstberättigade"
+    description = "Sätter rösträtt användare som är ansvariga för en grupp och närvarande."
 
-# class RepresentativesAsVoters(ElegibleVotersMethod):
-#
-#
-#     def get_voters(self, request = None, **kw):
-#         if GROUPS_NAME not in self.context:
-#             raise HTTPBadRequest("Hittar inte grupper")
-#         groups = self.context[GROUPS_NAME]
-
+    def get_voters(self, request = None, **kw):
+        """ Returns userids that are:
+            - owner (responsible) for a group.
+            - present
+            - that group has votes
+        """
+        if GROUPS_NAME not in self.context: # pragma: no coverage
+            raise HTTPBadRequest("Hittar inte grupper")
+        presence = IMeetingPresence(self.context)
+        if presence.open:
+            raise HTTPBadRequest("Stäng närvarokontrollen först")
+        groups = self.context[GROUPS_NAME]
+        for group in groups.values():
+            userid = group.owner
+            if userid and userid in presence and groups.get_vote_power(group.__name__):
+                yield userid
 
 
 def create_groups(groups, request):
@@ -94,3 +106,4 @@ def includeme(config):
         title="Är representant för en annan grupp.",
         allow_move=False
     )
+    config.registry.registerAdapter(RepresentativesAsVoters, name=RepresentativesAsVoters.name)
