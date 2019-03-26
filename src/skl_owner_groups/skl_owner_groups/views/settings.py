@@ -10,17 +10,11 @@ from voteit.core.views.control_panel import control_panel_category
 
 from skl_owner_groups.interfaces import GROUPS_NAME
 from skl_owner_groups.models import create_groups
+from skl_owner_groups.models import groups_exist
+from skl_owner_groups.models import groups_active
 
 
 CREATE_VIEW_NAME = '_create_skl_groups'
-
-
-def groups_exist(context, request, *args, **kwargs):
-    return GROUPS_NAME in request.meeting
-
-
-def groups_active(context, request, *args, **kw):
-    return groups_exist(context, request) and request.meeting[GROUPS_NAME].enabled
 
 
 def create_link(context, request, va, **kw):

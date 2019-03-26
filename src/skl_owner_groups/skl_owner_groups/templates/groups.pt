@@ -25,6 +25,13 @@
     <a href="${request.resource_url(request.meeting, 'update_elegible_voters')}">
       Röstberättigade och rösttal
     </a>
+
+    &mdash;
+
+    <a href="${request.resource_url(context, '_update_skl_vote_power')}">
+      Uppdatera SKLs röster
+    </a>
+
   </p>
 
   <div tal:condition="not context.enabled" class="alert alert-warning" role="alert">
