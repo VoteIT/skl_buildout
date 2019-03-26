@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from hashlib import md5
 from collections import Counter
 from uuid import uuid4
 
@@ -193,6 +194,19 @@ def multiply_and_categorize_votes(obj, event):
             if vote.__name__ == userid:
                 continue
             vote.set_vote_data(vote_data)
+
+
+def analyze_vote_distribution(poll):
+    hashed = {}
+    categorized = {}
+    for v in [x for x in poll.values() if IVote.providedBy(x)]:
+        vote_content = v.get_vote_data()
+        checksum = md5(vote_content).hexdigest()
+        if checksum not in hashed:
+            hashed[checksum] = vote_content
+        counter = categorized.setdefault(v.category, Counter())
+        counter[checksum] += 1
+    return hashed, categorized
 
 
 def includeme(config):

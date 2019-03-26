@@ -242,7 +242,6 @@ class MultiplyVotesSubscriberIntegrationTests(TestCase):
         testing.tearDown()
 
     def _poll_fixture(self):
-
         root = SiteRoot()
         root['m'] = meeting = Meeting()
         meeting['ai'] = ai = AgendaItem()
@@ -346,3 +345,48 @@ class MultiplyVotesSubscriberIntegrationTests(TestCase):
         poll['adam'] = vote = Vote()
         self.assertEqual(len(poll), 1)
         self.assertEqual(getattr(vote, 'category', None), None)
+
+
+class AnalyzeVoteDistributionTests(TestCase):
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _fixture(self):
+        poll = Poll()
+
+        # 2 for Hello, cat A + B
+        vote = Vote()
+        vote.set_vote_data('Hello', notify=False)
+        vote.category = 'A'
+        poll['a'] = vote
+
+        vote = Vote()
+        vote.set_vote_data('Hello', notify=False)
+        vote.category = 'B'
+        poll['b'] = vote
+
+        # 1 for Bye, cat A
+        vote = Vote()
+        vote.set_vote_data('Bye', notify=False)
+        vote.category = 'A'
+        poll['c'] = vote
+
+        return poll
+
+    @property
+    def _fut(self):
+        from skl_owner_groups.models import analyze_vote_distribution
+        return analyze_vote_distribution
+
+    def test_distribution(self):
+        poll = self._fixture()
+        hashes, categories = self._fut(poll)
+        self.assertEqual(hashes, {'8b1a9953c4611296a827abf8c47804d7': 'Hello', 'b665d826e919381052ec23b9eaec3b62': 'Bye'})
+        self.assertIn('A', categories)
+        self.assertIn('B', categories)
+        self.assertEqual(categories['A'], {'8b1a9953c4611296a827abf8c47804d7': 1, 'b665d826e919381052ec23b9eaec3b62': 1})
+        self.assertEqual(categories['B'], {'8b1a9953c4611296a827abf8c47804d7': 1})
