@@ -11,6 +11,9 @@ rgb(230,70,10)
 Backgroundish:
 ???
 #c5d3d4
+
+Dark brown/gray identity colour:
+rgb(141, 129, 121)
 */
 /*
 $gray-base:              #000 !default;
@@ -19,6 +22,17 @@ $gray-dark:              lighten($gray-base, 20%) !default;   // #333
 $gray:                   lighten($gray-base, 33.5%) !default; // #555
 $gray-light:             lighten($gray-base, 46.7%) !default; // #777
 $gray-lighter:           lighten($gray-base, 93.5%) !default; // #eee
+*/
+/*
+$link-color:                    $brand-primary !default;
+$component-active-bg:           $brand-primary !default;
+$btn-primary-bg:                $brand-primary !default;
+$pagination-active-bg:          $brand-primary !default;
+$pagination-active-border:      $brand-primary !default;
+$label-primary-bg:              $brand-primary !default;
+$progress-bar-bg:               $brand-primary !default;
+$panel-primary-border:          $brand-primary !default;
+$panel-primary-heading-bg:      $brand-primary !default;
 */
 @import url("https://fonts.googleapis.com/css?family=Open+Sans");
 .slide-in-nav {
@@ -44,11 +58,11 @@ $gray-lighter:           lighten($gray-base, 93.5%) !default; // #eee
   }
 }
 #fixed-top-nav {
-  background-color: #FFBE0A;
+  background-color: #8d8179;
   color: #fff;
 }
 #fixed-top-nav a, #fixed-top-nav:focus, #fixed-top-nav:active {
-  background-color: #FFBE0A;
+  background-color: #8d8179;
   color: #fff;
 }
 #fixed-top-nav .dropdown-menu a {
