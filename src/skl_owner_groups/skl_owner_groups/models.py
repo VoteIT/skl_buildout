@@ -123,12 +123,12 @@ def get_total_categorized_vote_power(groups):
         - The result will be cached
     """
     assert IVGroups.providedBy(groups)
-    if hasattr(groups, _VOTE_DIST_CACHEATTR):
-        return getattr(groups, _VOTE_DIST_CACHEATTR)
     meeting = find_interface(groups, IMeeting)
     presence = IMeetingPresence(meeting)
     if presence.open:  #pragma: no coverage
         raise HTTPBadRequest("Närvarokontrollen är inte avslutad")
+    if hasattr(groups, _VOTE_DIST_CACHEATTR):
+        return getattr(groups, _VOTE_DIST_CACHEATTR)
     counter = Counter()
     for userid in presence:
         counter.update(groups.get_categorized_vote_power(userid))
