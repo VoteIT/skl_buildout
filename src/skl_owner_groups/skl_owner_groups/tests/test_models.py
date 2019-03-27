@@ -217,13 +217,13 @@ class TotalCategorizedVotePowerTests(TestCase):
     def test_presence_matter(self):
         groups, request, presence = self._fixture()
         self._present(presence, 'adam', 'teresa')
-        self.assertEqual(self._fut(groups), {'skl': 8, 'kommun': 1})
+        self.assertEqual(self._fut(groups), {'skl': 8, 'kommun': 1, 'total': 9})
 
     def test_delegation_and_presence(self):
         groups, request, presence = self._fixture()
         self._present(presence, 'adam', 'teresa')
         groups.delegate_vote_to('c', 'skl')
-        self.assertEqual(self._fut(groups), {'skl': 8, 'kommun': 1, 'region': 4})
+        self.assertEqual(self._fut(groups), {'skl': 8, 'kommun': 1, 'region': 4, 'total': 13})
 
 
 class MultiplyVotesSubscriberIntegrationTests(TestCase):

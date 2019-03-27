@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from hashlib import md5
 from collections import Counter
+from json import dumps
 from uuid import uuid4
 
 import unicodecsv as csv
@@ -12,7 +13,9 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.path import AssetResolver
 from pyramid.threadlocal import get_current_request
 from pyramid.traversal import find_interface
-from voteit.core.models.interfaces import IVote, IMeeting
+from six import string_types
+from voteit.core.models.interfaces import IMeeting
+from voteit.core.models.interfaces import IVote
 from voteit.irl.models.elegible_voters_method import ElegibleVotersMethod
 from voteit.irl.models.interfaces import IMeetingPresence
 
@@ -25,6 +28,7 @@ _KOMMUNER_FILE = "skl_owner_groups:data/kommuner.csv"
 _REGIONER_FILE = "skl_owner_groups:data/regioner.csv"
 _VOTE_DIST_CACHEATTR = '_v_cat_vote_power'
 _VOTE_CAT_CACHEATTR = '_v_cat_votes'
+
 
 def groups_exist(context, request, *args, **kwargs):
     return GROUPS_NAME in request.meeting
@@ -132,6 +136,7 @@ def get_total_categorized_vote_power(groups):
     counter = Counter()
     for userid in presence:
         counter.update(groups.get_categorized_vote_power(userid))
+    counter['total'] = sum(counter.itervalues())
     setattr(groups, _VOTE_DIST_CACHEATTR, counter)
     return counter
 
@@ -176,7 +181,6 @@ def multiply_and_categorize_votes(obj, event):
     if IObjectAddedEvent.providedBy(event):
         # Also categorize the votes here
         votes = [obj]
-
         Vote = poll_plugin.get_vote_class()
         assert IVote.implementedBy(Vote)
         for i in range(vote_counter):
@@ -211,7 +215,11 @@ def analyze_vote_distribution(poll):
     categorized = {}
     for v in [x for x in poll.values() if IVote.providedBy(x)]:
         vote_content = v.get_vote_data()
-        checksum = md5(vote_content).hexdigest()
+        if isinstance(vote_content, string_types):
+            hashable_content = vote_content
+        else:
+            hashable_content = dumps(vote_content)
+        checksum = md5(hashable_content).hexdigest()
         if checksum not in hashed:
             hashed[checksum] = vote_content
         counter = categorized.setdefault(v.category, Counter())
