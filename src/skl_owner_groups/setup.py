@@ -13,6 +13,7 @@ requires = [
     'pyramid_chameleon',
     'voteit.core',
     'voteit.irl',
+    'voteit.combined_simple',
     'Arche',
     'unicodecsv',
 ]
