@@ -24,34 +24,45 @@
         <h3 class="media-heading">${obj.title}</h3>
         <div tal:content="structure obj.description">Description</div>
     <tal:working_plugin condition="poll_plugin">
-      <a tal:condition="can_vote"
-        data-open-modal
-        data-modal-dialog-class="modal-lg"
-        class="btn btn-success"
-        href="${request.resource_url(obj, '__vote__')}">
-        <span data-actionmarker="glyphicon glyphicon-refresh rotate-me"></span>      
-        <span tal:condition="can_vote and not has_voted">
-          <span class="glyphicon glyphicon-star"></span>
-          <span i18n:translate="add_vote_button">Vote</span>
-        </span>
-        <span tal:condition="can_vote and has_voted" i18n:translate="">Change vote</span>
-      </a>
-      <a tal:condition="has_voted and not can_vote"
-        data-open-modal
-        data-modal-dialog-class="modal-lg"
-        class="btn btn-primary"
-        href="${request.resource_url(obj, '__vote__')}">
-        <span data-actionmarker="glyphicon glyphicon-refresh rotate-me"></span>
-        <span i18n:translate="">View vote</span>
-      </a>
+        <a tal:condition="can_vote"
+          data-open-modal
+          data-modal-dialog-class="modal-lg"
+          class="btn btn-success"
+          href="${request.resource_url(obj, '__vote__')}">
+          <span data-actionmarker="glyphicon glyphicon-refresh rotate-me"></span>
+          <span tal:condition="can_vote and not has_voted">
+            <span class="glyphicon glyphicon-star"></span>
+            <span i18n:translate="add_vote_button">Vote</span>
+          </span>
+          <span tal:condition="can_vote and has_voted" i18n:translate="">Change vote</span>
+        </a>
+        <a tal:condition="has_voted and not can_vote"
+          data-open-modal
+          data-modal-dialog-class="modal-lg"
+          class="btn btn-primary"
+          href="${request.resource_url(obj, '__vote__')}">
+          <span data-actionmarker="glyphicon glyphicon-refresh rotate-me"></span>
+          <span i18n:translate="">View vote</span>
+        </a>
 
-      <a tal:condition="wf_state == 'closed'"
-        data-open-modal
-        class="btn btn-primary"
-        href="${request.resource_url(obj, '__show_results__')}">
-        <span data-actionmarker="glyphicon glyphicon-refresh rotate-me"></span>
-        <span i18n:translate="">Show results</span>
-      </a>
+        <tal:results define="show_catlink view.show_category_link(obj)">
+          <a tal:condition="wf_state == 'closed' and not show_catlink"
+             data-open-modal
+            class="btn btn-primary"
+            href="${request.resource_url(obj, '__show_results__')}">
+            <span data-actionmarker="glyphicon glyphicon-refresh rotate-me"></span>
+            <span i18n:translate="">Show results</span>
+          </a>
+
+          <a tal:condition="show_catlink"
+            data-open-modal
+            data-modal-dialog-class="modal-lg"
+            class="btn btn-primary"
+            href="${request.resource_url(obj, '_cat_votes_modal')}">
+            <span data-actionmarker="glyphicon glyphicon-refresh rotate-me"></span>
+            Röstfördelning
+          </a>
+        </tal:results>
     </tal:working_plugin>
 
       </div>

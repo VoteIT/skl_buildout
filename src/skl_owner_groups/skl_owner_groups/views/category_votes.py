@@ -17,8 +17,8 @@ from skl_owner_groups.models import percentages_pass
 from skl_owner_groups.models import get_total_categorized_vote_power
 
 
-@view_config(context=IPoll, name="_category_votets", permission=VIEW,
-             renderer="skl_owner_groups:templates/category_votes.pt")
+@view_config(context=IPoll, name="_cat_votes_modal", permission=VIEW,
+             renderer="skl_owner_groups:templates/cat_votes_modal.pt")
 class CategoryVotes(BaseView):
 
     def __call__(self):

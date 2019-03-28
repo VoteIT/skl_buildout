@@ -37,7 +37,6 @@ class SKLPollsInline(PollsInline):
             Should only be called during ongoing or closed polls.
         """
         response = {'added': len(poll), 'total': 0}
-        wf_state = poll.get_workflow_state()
         try:
             vote_power = get_total_categorized_vote_power(self.request.meeting[GROUPS_NAME])
             response['total'] = vote_power['total']
@@ -52,6 +51,10 @@ class SKLPollsInline(PollsInline):
         else:
             response['percentage'] = 0
         return response
+
+    def show_category_link(self, poll):
+        if poll.poll_plugin in ('combined_simple', 'majority_poll'):
+            return poll.get_workflow_state() == 'closed'
 
 
 def adjust_poll_portlet(context, skl_version=True):
