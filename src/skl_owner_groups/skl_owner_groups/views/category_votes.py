@@ -11,7 +11,9 @@ from voteit.core.models.interfaces import IPoll
 from voteit.core.security import VIEW
 from voteit.irl.models.interfaces import IMeetingPresence
 
-from skl_owner_groups.models import analyze_vote_distribution, groups_exist
+from skl_owner_groups.models import analyze_vote_distribution
+from skl_owner_groups.models import groups_exist
+from skl_owner_groups.models import percentages_pass
 from skl_owner_groups.models import get_total_categorized_vote_power
 
 
@@ -45,7 +47,18 @@ class CategoryVotes(BaseView):
         return getattr(self, "method_%s" % self.context.poll_plugin)(uid)
 
     def method_combined_simple(self, uid):
-        pass
+        matching_hashes = set()
+        for (hash, vote_data) in self.hashed_votes.items():
+            if vote_data.get(uid, None) == 'approve':
+                matching_hashes.add(hash)
+        # Hash may not match anything, but a little iteration won't matter :P
+        counter = Counter()
+        for (cat, votemap) in self.categorized_votes.items():
+            for hash in matching_hashes:
+                if hash in votemap:
+                    counter[cat] += votemap[hash]
+                    counter['total'] += votemap[hash]
+        return counter
 
     def method_majority_poll(self, uid):
         use_hash = None
@@ -75,8 +88,7 @@ class CategoryVotes(BaseView):
     def colouring(self, percentages):
         results = {}
         results['skl'] = 'success'
-        # The 50 bar is really the case for this meeting, it's not a mistake!
-        if percentages['kommun'] > 32 and percentages['region'] > 32 and percentages['total'] >= 50:
+        if percentages_pass(percentages):
             results['total'] = 'success'
         else:
             results['total'] = 'danger'

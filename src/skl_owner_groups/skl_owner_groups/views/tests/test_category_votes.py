@@ -1,22 +1,15 @@
-from collections import Counter
 from unittest import TestCase
 
 from arche.utils import get_view
 from pyramid import testing
-from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.request import apply_request_extensions
-from pyramid.traversal import find_interface
 from voteit.core.models.agenda_item import AgendaItem
-from voteit.core.models.interfaces import IMeeting
 from voteit.core.models.meeting import Meeting
 from voteit.core.models.poll import Poll
 from voteit.core.models.proposal import Proposal
 from voteit.core.models.site import SiteRoot
 from voteit.core.models.vote import Vote
-from voteit.core.testing_helpers import bootstrap_and_fixture
-from voteit.irl.models.interfaces import IElegibleVotersMethod
 from voteit.irl.models.interfaces import IMeetingPresence
-from zope.interface.verify import verifyObject
 
 from skl_owner_groups.interfaces import GROUPS_NAME
 
@@ -38,14 +31,16 @@ class CategoryVotesViewsTests(TestCase):
     def tearDown(self):
         testing.tearDown()
 
-    def _fixture(self, votes):
+    def _fixture(self, votes, poll_plugin):
         # Meeting fixture
         root = SiteRoot()
         root['m'] = meeting = Meeting()
         meeting['ai'] = ai = AgendaItem()
-        ai['poll'] = poll = Poll(poll_plugin='majority_poll')
+        ai['poll'] = poll = Poll(poll_plugin=poll_plugin)
         ai['p1'] = Proposal(text="proposal one", uid='uid1')
         ai['p2'] = Proposal(text="proposal two", uid='uid2')
+        # Attach to poll
+        poll.proposals = ('uid1', 'uid2')
 
         # Groups
         from skl_owner_groups.resources import Group
@@ -107,14 +102,14 @@ class CategoryVotesViewsTests(TestCase):
             'one': {'proposal': 'uid1'},
             'two': {'proposal': 'uid2'}
         }
-        return self._fixture(votes)
+        return self._fixture(votes, 'majority_poll')
 
     def _combined_simple_fixture(self):
         votes = {
             'one': {'uid1': 'approve'},
             'two': {'uid2': 'approve', 'uid1': 'deny'}
         }
-        return self._fixture(votes)
+        return self._fixture(votes, 'combined_simple')
 
     @property
     def _cut(self):
@@ -134,15 +129,34 @@ class CategoryVotesViewsTests(TestCase):
         request = self._mk_request(poll)
         view = self._cut(poll, request)
         view()
-        counter = view.method_majority_poll('uid1')
+        counter = view.vote_count('uid1')
         self.assertEqual(counter, {'skl': 5, 'region': 1, 'total': 6})
-        counter = view.method_majority_poll('uid2')
+        counter = view.vote_count('uid2')
         self.assertEqual(counter, {'kommun': 4, 'region': 1, 'total': 5})
 
     def test_majority_poll_render(self):
         self.config.include('skl_owner_groups.views.category_votes')
         self.config.include('pyramid_chameleon')
         poll = self._majority_poll_fixture()
+        request = self._mk_request(poll)
+        view = get_view(poll, request, '_category_votets')
+        response = view(poll, request)
+        self.assertEqual(response.status_int, 200)
+
+    def test_combined_poll_count(self):
+        poll = self._combined_simple_fixture()
+        request = self._mk_request(poll)
+        view = self._cut(poll, request)
+        view()
+        counter = view.vote_count('uid1')
+        self.assertEqual(counter, {'skl': 5, 'region': 1, 'total': 6})
+        counter = view.vote_count('uid2')
+        self.assertEqual(counter, {'kommun': 4, 'region': 1, 'total': 5})
+
+    def test_combined_poll_render(self):
+        self.config.include('skl_owner_groups.views.category_votes')
+        self.config.include('pyramid_chameleon')
+        poll = self._combined_simple_fixture()
         request = self._mk_request(poll)
         view = get_view(poll, request, '_category_votets')
         response = view(poll, request)
