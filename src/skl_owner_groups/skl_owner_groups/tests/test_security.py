@@ -25,6 +25,7 @@ class SecurityIntegrationTests(TestCase):
         self.config.set_authorization_policy(ACLAuthorizationPolicy())
         self.config.set_authentication_policy(StaticAuthenticationPolicy(callback=groupfinder))
         root = bootstrap_and_fixture(self.config)
+        self.config.include('arche.portlets')
         self.config.include('arche.models.reference_guard')
         self.config.include('voteit.core.models.meeting')
         self.config.include('skl_owner_groups')
