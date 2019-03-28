@@ -399,3 +399,30 @@ class AnalyzeVoteDistributionTests(TestCase):
         hashes2, categories2 = self._fut(poll)
         self.assertEqual(hashes1, hashes2)
         self.assertEqual(categories1, categories2)
+
+
+class PercentagesPassTests(TestCase):
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    @property
+    def _fut(self):
+        from skl_owner_groups.models import percentages_pass
+        return percentages_pass
+
+    def test_not_enough_kommun(self):
+        self.assertFalse(self._fut({'kommun': 32, 'region': 33, 'total': 60}))
+
+    def test_not_enough_region(self):
+        self.assertFalse(self._fut({'kommun': 33, 'region': 32, 'total': 60}))
+
+    def test_good_margin(self):
+        self.assertTrue(self._fut({'kommun': 50, 'region': 50, 'total': 60}))
+
+    def test_minimal_level(self):
+        # Yes 50%, not a mistake!
+        self.assertTrue(self._fut({'kommun': 33, 'region': 33, 'total': 50}))

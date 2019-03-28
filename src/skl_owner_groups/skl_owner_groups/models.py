@@ -228,6 +228,12 @@ def analyze_vote_distribution(poll):
     return hashed, categorized
 
 
+def percentages_pass(percentages):
+    """ Accepts a dict of categorized percentages. Returns bool. """
+    # The 50 bar is really the case for this meeting, it's not a mistake!
+    return percentages['kommun'] > 32 and percentages['region'] > 32 and percentages['total'] >= 50
+
+
 def includeme(config):
     config.add_ref_guard(
         guard_representatives,
