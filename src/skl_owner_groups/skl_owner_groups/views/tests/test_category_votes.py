@@ -20,13 +20,10 @@ class CategoryVotesViewsTests(TestCase):
         self.config = testing.setUp()
         self.config.include('arche.testing')
         self.config.include('arche.testing.catalog')
-
-#        self.config.include('arche.models.reference_guard')
         self.config.include('voteit.core.helpers')
         self.config.include('voteit.core.plugins.majority_poll')
         self.config.include('voteit.irl.models.meeting_presence')
         self.config.include('skl_owner_groups.resources')
- #       self.config.include('skl_owner_groups.models')
 
     def tearDown(self):
         testing.tearDown()
@@ -139,7 +136,7 @@ class CategoryVotesViewsTests(TestCase):
         self.config.include('pyramid_chameleon')
         poll = self._majority_poll_fixture()
         request = self._mk_request(poll)
-        view = get_view(poll, request, '_category_votets')
+        view = get_view(poll, request, '_cat_votes_modal')
         response = view(poll, request)
         self.assertEqual(response.status_int, 200)
 
@@ -158,6 +155,6 @@ class CategoryVotesViewsTests(TestCase):
         self.config.include('pyramid_chameleon')
         poll = self._combined_simple_fixture()
         request = self._mk_request(poll)
-        view = get_view(poll, request, '_category_votets')
+        view = get_view(poll, request, '_cat_votes_modal')
         response = view(poll, request)
         self.assertEqual(response.status_int, 200)
