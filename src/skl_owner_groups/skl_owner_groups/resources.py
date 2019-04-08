@@ -65,6 +65,29 @@ class Group(Base, LocalRolesMixin):
         else:
             self.__parent__.remove_delegation(self.__name__)
 
+    @property
+    def potential_owner(self):
+        groups = self.__parent__
+        # Lazy, so check if we need to bother with iteration
+        if groups is None:
+            raise Exception("Resource isn't attached to the resource tree")
+        if self.__name__ in groups.potential_owners.values():
+            for (k, v) in groups.potential_owners.items():
+                if self.__name__ == v:
+                    return k
+
+    @potential_owner.setter
+    def potential_owner(self, value):
+        groups = self.__parent__
+        groups.potential_owners[value] = self.__name__
+
+    @potential_owner.deleter
+    def potential_owner(self):
+        k = self.potential_owner
+        if k is not None:
+            groups = self.__parent__
+            del groups.potential_owners[k]
+
 
 @implementer(IVGroups)
 class Groups(Content):
@@ -84,6 +107,7 @@ class Groups(Content):
         super(Groups, self).__init__(**kw)
         self._received_delegations = OOBTree()
         self._delegated_to = OOBTree()
+        self.potential_owners = OOBTree()
 
     def remove(self, name, send_events=True):
         """ Override removal of folders to make sure they clean up rerences.
@@ -156,6 +180,11 @@ class Groups(Content):
             group = self[name]
             counter[group.category] += group.base_votes
         return counter
+
+    def add_potential_owner(self, email, group_name):
+        if group_name not in self:
+            raise ValueError("Ingen grupp med namnet '%s' finns" % group_name)
+        self.potential_owners[email] = group_name
 
 
 def includeme(config):

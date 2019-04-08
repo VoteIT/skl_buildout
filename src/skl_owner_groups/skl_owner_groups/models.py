@@ -7,12 +7,16 @@ from json import dumps
 from uuid import uuid4
 
 import unicodecsv as csv
+from arche.interfaces import IEmailValidatedEvent
 from arche.interfaces import IObjectAddedEvent
 from arche.interfaces import IObjectUpdatedEvent
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.path import AssetResolver
 from pyramid.threadlocal import get_current_request
 from pyramid.traversal import find_interface
+from pyramid.traversal import find_root
+from repoze.catalog.query import Eq
+from repoze.catalog.query import Any
 from six import string_types
 from voteit.core.models.interfaces import IMeeting
 from voteit.core.models.interfaces import IVote
@@ -234,6 +238,99 @@ def percentages_pass(percentages):
     return percentages['kommun'] > 32 and percentages['region'] > 32 and percentages['total'] >= 50
 
 
+def maybe_assign_user_to_group(event):
+    """ A user has just validated their email address.
+        Check groups to see if that user is an expected owner somewhere.
+    """
+    # Find upcoming and ongoing meetings
+    user = event.user
+    root = find_root(user)
+    email = user.email
+    for obj in root.values():
+        if IMeeting.providedBy(obj) and obj.get_workflow_state() in ('upcoming', 'ongoing') and GROUPS_NAME in obj:
+            groups = obj[GROUPS_NAME]
+            if email in groups.potential_owners:
+                group = groups.get(groups.potential_owners[email])
+                if group:
+                    if not group.owner:
+                        group.owner = user.userid
+                    del groups.potential_owners[email]
+
+
+def extract_owner_data(text):
+    """
+    Text probably looks something like:
+    namn.namnsson@alvkarleby.se	0319 ÄLVKARLEBY (Where there's a tab after the email)
+    :param text: csv tab separated text
+    :return: generator with email, group_name
+    """
+    counter = 1
+    for row in text.splitlines():
+        if not row:
+            counter += 1
+            continue
+        cols = row.split("\t")
+        if len(cols) < 2:
+            raise ValueError("Rad %s verkar inte innehålla något tabtecken" % counter)
+        if len(cols) > 2:
+            raise ValueError("Rad %s har för många tabtecken" % counter)
+        email = cols[0]
+        if not email:
+            raise ValueError("Rad %s saknar epost" % counter)
+        group_name = cols[1].split()[0]
+        if not group_name:
+            raise ValueError("Rad %s saknar information om gruppnamn" % counter)
+        counter += 1
+        yield email, group_name
+
+
+def assign_potential_from_csv(groups, text, clear_all_existing=False, overwrite_owner=False):
+    # Note validation must be done before using this
+    if clear_all_existing:
+        groups.potential_owners.clear()
+    root = find_root(groups)
+    already_potential_groups = groups.potential_owners.values()
+    overwritten = 0
+    already_owned = 0
+    new_assigned = 0
+    new_potential = 0
+    replaced_potential = 0
+
+    for (email, group_name) in extract_owner_data(text):
+        group = groups[group_name]
+
+        # Should we overwrite the owner if the group is already owned?
+        if group.owner and not overwrite_owner:
+            already_owned += 1
+            continue
+
+        # Does the user already exist?
+        user = root.users.get_user_by_email(email, only_validated=True)
+        if user is not None:
+            if group.owner:
+                overwritten += 1
+            else:
+                new_assigned += 1
+            group.owner = user.userid
+            continue
+
+        if group_name in already_potential_groups:
+            replaced_potential += 1
+            del group.potential_owner
+        else:
+            # Not other action, so add the email as a potential
+            new_potential += 1
+        groups.add_potential_owner(email, group_name)
+
+    return dict(
+        overwritten=overwritten,
+        already_owned=already_owned,
+        new_assigned=new_assigned,
+        new_potential=new_potential,
+        replaced_potential=replaced_potential
+    )
+
+
 def includeme(config):
     config.add_ref_guard(
         guard_representatives,
@@ -245,3 +342,4 @@ def includeme(config):
     config.registry.registerAdapter(RepresentativesAsVoters, name=RepresentativesAsVoters.name)
     config.add_subscriber(multiply_and_categorize_votes, [IVote, IObjectAddedEvent])
     config.add_subscriber(multiply_and_categorize_votes, [IVote, IObjectUpdatedEvent])
+    config.add_subscriber(maybe_assign_user_to_group, IEmailValidatedEvent)

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      metal:use-macro="view.macro('arche:templates/base_view.pt', 'arche:templates/inline.pt')">
+<body>
+<metal:actionbar fill-slot="actionbar"></metal:actionbar>
+
+<div metal:fill-slot="main-content">
+  <h1>
+    Potentiella ansvariga
+  </h1>
+
+  <p><a href="${request.resource_url(context)}">Tillbaka till grupplistan</a></p>
+
+  <p>Lista på organisationer som inväntar registrering.
+    Om en organisation redan har en ansvarig person kommer den inte ersättas.</p>
+
+  <div class="table-responsive">
+    <table class="table-striped table-hover table-condensed">
+      <thead>
+        <tr>
+          <th>Organisation</th>
+          <th>Ansvarig</th>
+          <th>Potentiell ansvarig</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tal:iter repeat="(email, group_name) context.potential_owners.items()">
+          <tal:def define="group context[group_name]|None">
+            <tr>
+              <td>
+                ${group.title|group_name}
+              </td>
+              <td>
+                ${group.owner|'- Saknas- '}
+              </td>
+              <td>
+                ${email}
+              </td>
+            </tr>
+          </tal:def>
+        </tal:iter>
+      </tbody>
+
+    </table>
+  </div>
+
+</div>
+</body>
+</html>

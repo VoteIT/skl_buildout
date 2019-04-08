@@ -149,3 +149,11 @@ class GroupTest(TestCase):
         group = groups['a']
         group.delegate_to = 'b'
         self.assertEqual(group.delegate_to, 'b')
+
+    def test_set_potential(self):
+        groups, request = self._fixture()
+        group = groups['a']
+        email = 'hello@world.org'
+        group.potential_owner = email
+        self.assertEqual(group.potential_owner, email)
+        self.assertEqual(groups.potential_owners[email], 'a')

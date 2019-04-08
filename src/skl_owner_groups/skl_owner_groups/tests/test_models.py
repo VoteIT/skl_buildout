@@ -426,3 +426,44 @@ class PercentagesPassTests(TestCase):
     def test_minimal_level(self):
         # Yes 50%, not a mistake!
         self.assertTrue(self._fut({'kommun': 33, 'region': 33, 'total': 50}))
+
+
+class MaybeAssignUserToGroupTests(TestCase):
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _fixture(self):
+        root = bootstrap_and_fixture(self.config)
+        self.config.include('arche.models.reference_guard')
+        self.config.include('skl_owner_groups.resources')
+        self.config.include('skl_owner_groups.models')
+        request = testing.DummyRequest()
+        apply_request_extensions(request)
+        self.config.begin(request)
+        request.root = root
+        root['m'] = meeting = Meeting()
+        root.users['adam'] = request.content_factories['User'](email='adamski@email.org')
+        groups = meeting[GROUPS_NAME] = request.content_factories['VGroups']()
+        gfact = request.content_factories['VGroup']
+        groups['a'] = gfact(title='A')
+        groups['a'].potential_owner = 'adamski@email.org'
+        return groups, request
+
+    def test_integration(self):
+        groups, request = self._fixture()
+        group = groups['a']
+        self.assertEqual(group.owner, None)
+        request.root.users['adam'].email_validated = True
+        self.assertEqual(group.owner, 'adam')
+
+    def test_already_has_owner(self):
+        groups, request = self._fixture()
+        group = groups['a']
+        self.assertEqual(group.owner, None)
+        group.owner = 'jane'
+        request.root.users['adam'].email_validated = True
+        self.assertEqual(group.owner, 'jane')

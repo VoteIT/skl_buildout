@@ -10,6 +10,7 @@ from pyramid.traversal import resource_path
 from skl_owner_groups.interfaces import IVGroup
 from skl_owner_groups.interfaces import IVGroups
 from skl_owner_groups.interfaces import GRUPPKATEGORIER
+from skl_owner_groups.models import extract_owner_data
 
 
 class CreateSchema(colander.Schema):
@@ -31,6 +32,60 @@ class SettingsSchema(colander.Schema):
         colander.String(),
         title="Titel",
         validator=colander.Length(min=3, max=15)
+    )
+
+
+@colander.deferred
+class CSVTextValidator(object):
+
+    def __init__(self, node, kw):
+        self.context = kw['context']
+        assert IVGroups.providedBy(self.context)
+
+    def __call__(self, node, value):
+        try:
+            potential_data = tuple(extract_owner_data(value))
+        except ValueError as exc:
+            raise colander.Invalid(node, exc.message)
+        counter = 1
+        processed_emails = set()
+        processed_names = set()
+        for (email, group_name) in potential_data:
+            email_validator = colander.Email("Rad %s har en ogiltig epostadress: %s" % (counter, email))
+            email_validator(node, email)
+            if group_name not in self.context:
+                raise colander.Invalid(node, "Rad %s har ett gruppnamn som inte finns: %s" % (counter, group_name))
+            if email in processed_emails:
+                raise colander.Invalid(node, "Rad %s försöker lägga till en epostadress som redan använts: %s" % (counter, email))
+            processed_emails.add(email)
+            if group_name in processed_names:
+                raise colander.Invalid(node, "Rad %s försöker lägga till ett gruppnamn som redan använts: %s" % (counter, group_name))
+            processed_names.add(group_name)
+            counter += 1
+
+
+class AssignPotentialOwnersSchema(colander.Schema):
+    description = "Potentiella ansvariga är alltså en epostadress per kommun/region (grupp i det här systemet). " \
+                  "Om en användare redan finns i systemet och har en matchande epostadress så " \
+                  "knyts den personen som ansvarig direkt."
+    csv_text = colander.SchemaNode(
+        colander.String(),
+        title = "Klistra in kolumner från excel eller dylikt",
+        description="Ska ha formatet <epost>   <kommunkod> <kommunnamn>, ex namn.namnsson@nynashamn.se	0192 NYNÄSHAMN. "
+                    "Notera att det är tab mellan epost och kommunkod - vilket det blir automatiskt om "
+                    "informationen klistras in från t.ex. Excel.",
+        widget=deform.widget.TextAreaWidget(rows=10),
+        validator=CSVTextValidator,
+    )
+    clear_all_existing = colander.SchemaNode(
+        colander.Bool(),
+        title = "Radera alla nuvarande potentiella ansvariga?",
+        description="Påverkar inte grupper som redan har en ansvarig och inte bara en potentiell ansvarig."
+    )
+    overwrite_owner = colander.SchemaNode(
+        colander.Bool(),
+        title = "Byt ansvarig för kommuner som redan har en annan ansvarig person "
+                "om den nya ansvariga finns registrerad i systemet?",
     )
 
 
@@ -171,5 +226,6 @@ class AddGroupSchema(GroupSchema):
 def includeme(config):
     config.add_schema('VGroups', CreateSchema, 'create')
     config.add_schema('VGroups', SettingsSchema, 'edit')
+    config.add_schema('VGroups', AssignPotentialOwnersSchema, 'assign')
     config.add_schema('VGroup', AddGroupSchema, 'add')
     config.add_schema('VGroup', GroupSchema, 'edit')

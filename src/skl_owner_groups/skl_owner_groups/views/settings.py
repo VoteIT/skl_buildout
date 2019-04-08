@@ -38,8 +38,11 @@ def groups_main_link(context, request, va, **kw):
 def groups_context_cpanel(context, request, va, **kw):
     if groups_exist(context, request):
         groups = request.meeting[GROUPS_NAME]
-        url = request.resource_url(groups)
-        title = request.localizer.translate(groups.title)
+        url = request.resource_url(groups, va.kwargs.get('view_name', ''))
+        if va.title:
+            title = va.title
+        else:
+            title = groups.title
         return """<li><a href="%s">%s</a></li>""" % (url, title)
 
 
@@ -96,4 +99,16 @@ def includeme(config):
         'control_panel_vgroups', 'settings',
         title="Inställningar",
         view_name="edit",
+    )
+    config.add_view_action(
+        groups_context_cpanel,
+        'control_panel_vgroups', 'import',
+        title="Importera ansvariga",
+        view_name="_import_potential_owners",
+    )
+    config.add_view_action(
+        groups_context_cpanel,
+        'control_panel_vgroups', 'list_potential',
+        title="Lista potentiella ansvariga",
+        view_name="_potential_owners",
     )
