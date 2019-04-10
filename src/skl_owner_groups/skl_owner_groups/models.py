@@ -173,6 +173,11 @@ def multiply_and_categorize_votes(obj, event):
     groups = meeting[GROUPS_NAME]
     group = groups.get_users_group(userid)
 
+    # There may be situations when users can vote and don't have a group.
+    # Before the meeting starts or during demos for instance.
+    if group is None:
+        return
+
     vote_counter = groups.get_vote_power(group.__name__)
     # Since one vote was used already, that caused this subscriber to fire :)
     vote_counter -= 1
@@ -226,7 +231,7 @@ def analyze_vote_distribution(poll):
         checksum = md5(hashable_content).hexdigest()
         if checksum not in hashed:
             hashed[checksum] = vote_content
-        counter = categorized.setdefault(v.category, Counter())
+        counter = categorized.setdefault(getattr(v, 'category', ''), Counter())
         counter[checksum] += 1
     setattr(poll, _VOTE_CAT_CACHEATTR, (hashed, categorized))
     return hashed, categorized
