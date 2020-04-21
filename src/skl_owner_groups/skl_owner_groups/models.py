@@ -44,7 +44,7 @@ def groups_active(context, request, *args, **kw):
 
 class RepresentativesAsVoters(ElegibleVotersMethod):
     name = 'skl_owner_groups'
-    title = "SKLs metod för att sätta röstberättigade"
+    title = "SKRs metod för att sätta röstberättigade"
     description = "Sätter rösträtt användare som är ansvariga för en grupp och närvarande."
 
     def get_voters(self, request = None, **kw):
@@ -84,7 +84,7 @@ def create_groups(groups, request):
     factory = request.content_factories['VGroup']
 
     # SKL
-    groups['skl'] = factory(title='SKL', category='skl')
+    groups['skl'] = factory(title='SKR', category='skl')
 
     # Regionerna
     for (key, title) in _get_kv_from_csv(_REGIONER_FILE):

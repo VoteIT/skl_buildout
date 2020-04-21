@@ -29,7 +29,7 @@
     &mdash;
 
     <a href="${request.resource_url(context, '_update_skl_vote_power')}">
-      Uppdatera SKLs röster
+      Uppdatera SKRs röster
     </a>
 
   </p>

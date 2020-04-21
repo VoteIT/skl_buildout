@@ -32,7 +32,7 @@ class UpdateVotes(BaseView):
         if was_count == new_count:
             self.flash_messages.add("Ingen förändring i rösttal")
         else:
-            self.flash_messages.add("SKL har nu {} röster istället för {}".format(new_count, was_count))
+            self.flash_messages.add("SKR har nu {} röster istället för {}".format(new_count, was_count))
         return HTTPFound(location=self.request.resource_url(self.context))
 
 

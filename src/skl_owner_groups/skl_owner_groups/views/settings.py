@@ -81,7 +81,7 @@ def includeme(config):
         control_panel_category,
         'control_panel', 'vgroups',
         panel_group='control_panel_vgroups',
-        title="SKLs grupper",
+        title="SKRs grupper",
         description="Hanterar rösträtt för olika kategorier av användare",
         permission=security.MODERATE_MEETING,
         check_active=groups_active
