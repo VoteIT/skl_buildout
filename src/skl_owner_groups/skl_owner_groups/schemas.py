@@ -51,6 +51,7 @@ class CSVTextValidator(object):
         processed_emails = set()
         processed_names = set()
         for (email, group_name) in potential_data:
+            email = email.strip()
             email_validator = colander.Email("Rad %s har en ogiltig epostadress: %s" % (counter, email))
             email_validator(node, email)
             if group_name not in self.context:

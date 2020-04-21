@@ -279,7 +279,7 @@ def extract_owner_data(text):
             raise ValueError("Rad %s verkar inte innehålla något tabtecken" % counter)
         if len(cols) > 2:
             raise ValueError("Rad %s har för många tabtecken" % counter)
-        email = cols[0]
+        email = cols[0].strip()
         if not email:
             raise ValueError("Rad %s saknar epost" % counter)
         group_name = cols[1].split()[0]

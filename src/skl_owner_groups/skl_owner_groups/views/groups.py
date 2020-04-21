@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from arche.views.base import BaseForm, DefaultEditForm
+from arche.views.base import DefaultEditForm
 from arche.views.base import BaseView
 from pyramid.httpexceptions import HTTPFound
 from voteit.core.security import MODERATE_MEETING
@@ -9,7 +9,8 @@ from voteit.core.security import VIEW
 from voteit.irl.models.interfaces import IMeetingPresence
 
 from skl_owner_groups.interfaces import IVGroups
-from skl_owner_groups.models import update_skl_vote_power, assign_potential_from_csv
+from skl_owner_groups.models import assign_potential_from_csv
+from skl_owner_groups.models import update_skl_vote_power
 from skl_owner_groups.security import ADD_VGROUP
 
 
@@ -66,7 +67,6 @@ class AssignPotentialOwnersForm(DefaultEditForm):
             out += "%s fick sin potentiellt ansvarige ersatt av ny. " % replaced_potential
         self.flash_messages.add(out, auto_destruct=False)
         return HTTPFound(location=self.request.resource_url(self.context))
-
 
 
 def includeme(config):
