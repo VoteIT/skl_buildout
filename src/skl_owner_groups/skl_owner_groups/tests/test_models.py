@@ -391,15 +391,6 @@ class AnalyzeVoteDistributionTests(TestCase):
         self.assertEqual(categories['A'], {'8b1a9953c4611296a827abf8c47804d7': 1, 'b665d826e919381052ec23b9eaec3b62': 1})
         self.assertEqual(categories['B'], {'8b1a9953c4611296a827abf8c47804d7': 1})
 
-    def test_cache(self):
-        from skl_owner_groups.models import _VOTE_CAT_CACHEATTR
-        poll = self._fixture()
-        hashes1, categories1 = self._fut(poll)
-        self.assertEqual(getattr(poll, _VOTE_CAT_CACHEATTR), (hashes1, categories1))
-        hashes2, categories2 = self._fut(poll)
-        self.assertEqual(hashes1, hashes2)
-        self.assertEqual(categories1, categories2)
-
 
 class PercentagesPassTests(TestCase):
 

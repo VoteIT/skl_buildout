@@ -30,8 +30,6 @@ from skl_owner_groups.interfaces import GROUPS_NAME
 
 _KOMMUNER_FILE = "skl_owner_groups:data/kommuner.csv"
 _REGIONER_FILE = "skl_owner_groups:data/regioner.csv"
-_VOTE_DIST_CACHEATTR = '_v_cat_vote_power'
-_VOTE_CAT_CACHEATTR = '_v_cat_votes'
 
 
 def groups_exist(context, request, *args, **kwargs):
@@ -135,13 +133,10 @@ def get_total_categorized_vote_power(groups):
     presence = IMeetingPresence(meeting)
     if presence.open:  #pragma: no coverage
         raise HTTPBadRequest("Närvarokontrollen är inte avslutad")
-    if hasattr(groups, _VOTE_DIST_CACHEATTR):
-        return getattr(groups, _VOTE_DIST_CACHEATTR)
     counter = Counter()
     for userid in presence:
         counter.update(groups.get_categorized_vote_power(userid))
     counter['total'] = sum(counter.itervalues())
-    setattr(groups, _VOTE_DIST_CACHEATTR, counter)
     return counter
 
 
@@ -151,8 +146,6 @@ def update_skl_vote_power(groups):
     skl = groups['skl']
     was_count = skl.base_votes
     skl.base_votes = counter['kommun'] + counter['region'] - 1
-    if hasattr(groups, _VOTE_DIST_CACHEATTR):
-        delattr(groups, _VOTE_DIST_CACHEATTR)
     return was_count, skl.base_votes
 
 
@@ -218,8 +211,6 @@ def multiply_and_categorize_votes(obj, event):
 
 def analyze_vote_distribution(poll):
     """ Check vote distribution, cache result. """
-    if hasattr(poll, _VOTE_CAT_CACHEATTR):
-        return getattr(poll, _VOTE_CAT_CACHEATTR)
     hashed = {}
     categorized = {}
     for v in [x for x in poll.values() if IVote.providedBy(x)]:
@@ -233,7 +224,6 @@ def analyze_vote_distribution(poll):
             hashed[checksum] = vote_content
         counter = categorized.setdefault(getattr(v, 'category', ''), Counter())
         counter[checksum] += 1
-    setattr(poll, _VOTE_CAT_CACHEATTR, (hashed, categorized))
     return hashed, categorized
 
 
